@@ -43,7 +43,7 @@
   const percent = (v) => (Number.isFinite(v) ? v.toFixed(2) + "%" : "-");
   const shortPercent = (v) => {
     if (!Number.isFinite(v)) return "-";
-    return (Number.isInteger(v) ? v : v.toFixed(1)) + "%";
+    return new Intl.NumberFormat("th-TH", { maximumFractionDigits: 2 }).format(v) + "%";
   };
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   const gpFrom = (price, cost) => (price <= 0 ? NaN : ((price - cost) / price) * 100);
