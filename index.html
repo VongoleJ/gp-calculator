@@ -1,136 +1,165 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#3f5f68">
+  <meta name="theme-color" content="#0E5A48">
   <title>GP Calculator</title>
-  <link rel="stylesheet" href="styles.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    input { font: inherit; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
+
+    /* focus-within accents (override inline border-color) */
+    .ibox-base:focus-within   { border-color: #2563EB !important; }
+    .ibox-cost:focus-within   { border-color: #64748B !important; }
+    .ibox-target:focus-within { border-color: var(--accent, #0E5A48) !important; }
+
+    /* responsive grids (defined here so they can collapse on narrow screens) */
+    /* 2x2: each input box shares a row with its result card so their frames align */
+    .io-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; column-gap: 20px; row-gap: 12px; align-items: stretch; }
+    .io-field { display: grid; grid-template-rows: auto 1fr; gap: 7px; }
+    .ex-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+
+    @media (max-width: 560px) {
+      .io-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
+      .io-field .io-box { min-height: 56px; }
+      .ex-grid { grid-template-columns: 1fr; }
+      .app-header { flex-wrap: wrap; }
+      .app-header img { height: 40px; max-width: 100%; }
+    }
+  </style>
 </head>
 <body>
-  <main class="app-shell">
-    <header class="app-header">
-      <div class="brand-lockup">
-        <div class="brand-mark" aria-hidden="true">GP</div>
-        <div>
-          <h1>GP Calculator</h1>
-          <p>คำนวณราคาขาย กำไร และ GP</p>
-        </div>
+<div id="appRoot" style="--accent: #0E5A48; --accent2: #0a4335; --accentSoft: #dde8e5; min-height: 100vh; background: #F5F3EC; color: #16201C; font-family: 'IBM Plex Sans Thai', system-ui, 'Noto Sans Thai', sans-serif; -webkit-font-smoothing: antialiased; padding: 40px 20px 56px;">
+  <div style="width: 100%; max-width: 880px; margin: 0 auto;">
+
+    <header class="app-header" style="display: flex; align-items: center; gap: 18px; margin-bottom: 26px;">
+      <img src="meaei-solaros-logo.svg" alt="MEAei SolarOS" style="height: 48px; width: auto; display: block; flex: none;">
+      <span style="width: 1px; height: 44px; background: #D9D7CB; flex: none;"></span>
+      <div style="flex: none;">
+        <h1 style="margin: 0; font-size: 1.32rem; font-weight: 700; line-height: 1.1; letter-spacing: -.01em; white-space: nowrap;">GP Calculator</h1>
+        <p style="margin: 4px 0 0; color: #5C6B65; font-size: .9rem; white-space: nowrap;">คำนวณราคาขาย กำไร และ GP</p>
       </div>
     </header>
 
-    <section class="calculator" aria-label="เครื่องคำนวณ GP">
-      <section class="panel input-panel" aria-labelledby="inputTitle">
-        <div class="panel-title">
-          <h2 id="inputTitle">ข้อมูลตั้งต้น</h2>
-        </div>
+    <section style="background: #fff; border: 1px solid #E4E2D7; border-radius: 20px; padding: 22px; box-shadow: 0 1px 2px rgba(20,32,28,.04), 0 14px 32px rgba(20,32,28,.05); margin-bottom: 16px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 18px;">
+        <h2 style="margin: 0; font-size: 1.12rem; font-weight: 700;">ข้อมูลตั้งต้น</h2>
+        <span style="height: 1px; flex: 1; background: #ECEAE0;"></span>
+      </div>
 
-        <div class="fields">
-          <label class="field" for="basePrice">
-            <span>ราคาขาย</span>
-            <span class="input-box">
-              <input id="basePrice" class="money-input" type="text" inputmode="numeric" autocomplete="off" value="275,900">
-              <span>บาท</span>
-            </span>
-          </label>
-
-          <label class="field" for="cost">
-            <span>ต้นทุน</span>
-            <span class="input-box">
-              <input id="cost" class="money-input" type="text" inputmode="numeric" autocomplete="off" value="220,000">
-              <span>บาท</span>
-            </span>
-          </label>
-        </div>
-
-        <div class="initial-results" aria-label="ผลลัพธ์จากข้อมูลตั้งต้น">
-          <div class="metric large">
-            <span>กำไรเริ่มต้น</span>
-            <strong id="initialProfit">55,900</strong>
-          </div>
-          <div class="metric large">
-            <span>GP เริ่มต้น</span>
-            <strong id="initialGp">20.26%</strong>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel control-panel" aria-labelledby="priceTitle">
-        <div class="panel-title compact">
-          <div>
-            <h2 id="priceTitle">ปรับราคาขาย</h2>
-            <p>ช่วงราคาอิงจาก GP 0-40%</p>
-          </div>
-          <output id="priceGpBadge" class="badge">20.26%</output>
-        </div>
-
-        <div class="slider-card">
-          <div class="slider-top">
-            <label for="priceSlider">ราคาขาย</label>
-            <output id="priceSliderText">275,900 บาท</output>
-          </div>
-          <input id="priceSlider" type="range" min="220000" max="366700" step="100" value="275900">
-          <div class="range-caption">
-            <span id="priceMinText">0% GP</span>
-            <span id="priceMaxText">40% GP</span>
-          </div>
-        </div>
-
-        <div class="result-grid">
-          <div class="metric">
-            <span>กำไร</span>
-            <strong id="priceModeProfit">55,900</strong>
-          </div>
-          <div class="metric">
-            <span>GP</span>
-            <strong id="priceModeGp">20.26%</strong>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel control-panel accent-panel" aria-labelledby="targetTitle">
-        <div class="panel-title compact">
-          <div>
-            <h2 id="targetTitle">ตั้งเป้า GP</h2>
-            <p>ย้อนหาราคาขายจาก GP เป้าหมาย</p>
-          </div>
-          <output id="targetGpText" class="badge">20%</output>
-        </div>
-
-        <label class="field slim" for="targetGpInput">
-          <span>Target GP</span>
-          <span class="input-box">
-            <input id="targetGpInput" type="text" inputmode="decimal" autocomplete="off" value="20">
-            <span>%</span>
+      <div class="io-grid">
+        <label class="io-field">
+          <span style="display: inline-flex; align-items: center; gap: 7px; font-size: .9rem; font-weight: 600; color: #2A5BD0;">
+            <span style="display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 6px; background: #2563EB; color: #fff; font-size: .72rem; font-weight: 700;">฿</span>ราคาขาย
+          </span>
+          <span class="ibox-base io-box" style="display: grid; grid-template-columns: 1fr auto; align-items: center; min-height: 56px; border: 1.5px solid #C4D6F7; border-left: 5px solid #2563EB; border-radius: 13px; background: #EFF4FD; padding: 0 14px;">
+            <input id="base" type="text" inputmode="numeric" autocomplete="off" value="275,900" style="border: 0; outline: 0; background: transparent; width: 100%; min-width: 0; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.32rem; font-weight: 600; font-variant-numeric: tabular-nums;">
+            <span style="color: #7187AE; font-size: .9rem; font-weight: 600;">บาท</span>
           </span>
         </label>
 
-        <div class="slider-card">
-          <div class="slider-top">
-            <label for="targetGpSlider">GP เป้าหมาย</label>
-            <output id="targetGpValue">20%</output>
+        <div id="initProfitCard" style="display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-radius: 15px; padding: 16px 18px; color: #fff;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 22px;">
+            <span style="font-size: .82rem; font-weight: 600; color: rgba(255,255,255,.82);">กำไรเริ่มต้น</span>
           </div>
-          <input id="targetGpSlider" type="range" min="0" max="40" step="0.5" value="20">
-          <div class="range-caption">
-            <span>0%</span>
-            <span>40%</span>
-          </div>
+          <strong id="initialProfit" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.95rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums;">55,900</strong>
         </div>
 
-        <div class="result-grid">
-          <div class="metric primary">
-            <span>ราคาขายที่ต้องใช้</span>
-            <strong id="targetPrice">275,000</strong>
+        <label class="io-field">
+          <span style="display: inline-flex; align-items: center; gap: 7px; font-size: .9rem; font-weight: 600; color: #5A6573;">
+            <span style="display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 6px; background: #64748B; color: #fff; font-size: .72rem; font-weight: 700;">−</span>ต้นทุน
+          </span>
+          <span class="ibox-cost io-box" style="display: grid; grid-template-columns: 1fr auto; align-items: center; min-height: 56px; border: 1.5px solid #D7DBE0; border-left: 5px solid #64748B; border-radius: 13px; background: #F4F5F7; padding: 0 14px;">
+            <input id="cost" type="text" inputmode="numeric" autocomplete="off" value="220,000" style="border: 0; outline: 0; background: transparent; width: 100%; min-width: 0; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.32rem; font-weight: 600; font-variant-numeric: tabular-nums;">
+            <span style="color: #8A929D; font-size: .9rem; font-weight: 600;">บาท</span>
+          </span>
+        </label>
+
+        <div id="initGpCard" style="display: flex; flex-direction: column; justify-content: space-between; gap: 8px; border-radius: 15px; padding: 16px 18px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 22px;">
+            <span id="initGpLabel" style="font-size: .82rem; font-weight: 600;">GP เริ่มต้น</span>
+            <span id="initStatus" style="display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; color: #fff; font-size: .72rem; font-weight: 700;">ดี</span>
           </div>
-          <div class="metric">
-            <span>กำไร</span>
-            <strong id="targetProfit">55,000</strong>
-          </div>
+          <strong id="initialGp" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.95rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums;">20.26%</strong>
         </div>
-      </section>
+      </div>
     </section>
-  </main>
 
-  <script src="app.js"></script>
+    <section style="background: #fff; border: 1px solid #E4E2D7; border-radius: 20px; padding: 22px; box-shadow: 0 1px 2px rgba(20,32,28,.04), 0 14px 32px rgba(20,32,28,.05);">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px;">
+        <div>
+          <h2 style="margin: 0; font-size: 1.12rem; font-weight: 700;">จำลองตามเป้า GP</h2>
+          <p style="margin: 4px 0 0; color: #5C6B65; font-size: .9rem;">เลื่อนเพื่อดูราคาขายและกำไรในแต่ละระดับ GP</p>
+        </div>
+        <label style="display: grid; gap: 6px; justify-items: end;">
+          <span style="font-size: .78rem; font-weight: 600; color: #5C6B65;">Target GP</span>
+          <span class="ibox-target" style="display: inline-grid; grid-template-columns: auto auto; align-items: center; gap: 2px; height: 42px; border: 1.5px solid #E0DED2; border-radius: 11px; background: #FCFCF9; padding: 0 12px;">
+            <input id="gpText" type="text" inputmode="decimal" autocomplete="off" value="20" style="border: 0; outline: 0; background: transparent; width: 48px; text-align: right; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums;">
+            <span style="color: #8A968F; font-size: .9rem; font-weight: 600;">%</span>
+          </span>
+        </label>
+      </div>
+
+      <div class="ex-grid">
+        <div style="border-radius: 15px; padding: 15px 16px; background: #F6F5EE; border: 1px solid #ECEAE0;">
+          <span style="display: block; font-size: .8rem; font-weight: 600; color: #8A968F;">GP เป้าหมาย</span>
+          <strong id="exploreGpVal" style="display: block; margin-top: 5px; font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums;">20%</strong>
+        </div>
+        <div style="border-radius: 15px; padding: 15px 16px; background: var(--accentSoft, #E3F0EC);">
+          <span style="display: block; font-size: .8rem; font-weight: 600; color: var(--accent2, #0A4334); opacity: .85;">ราคาขายที่ต้องใช้</span>
+          <strong id="explorePrice" style="display: block; margin-top: 5px; font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent2, #0A4334);">275,000</strong>
+        </div>
+        <div style="border-radius: 15px; padding: 15px 16px; background: #F6F5EE; border: 1px solid #ECEAE0;">
+          <span style="display: block; font-size: .8rem; font-weight: 600; color: #8A968F;">กำไร</span>
+          <strong id="exploreProfit" style="display: block; margin-top: 5px; font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: #0E7C5A;">55,000</strong>
+        </div>
+      </div>
+
+      <div style="position: relative; height: 64px;">
+        <div id="gpTooltip" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); padding: 3px 10px; border-radius: 8px; color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: .84rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: 0 4px 10px rgba(20,32,28,.18);">20%</div>
+        <div style="position: absolute; left: 0; right: 0; top: 32px; height: 16px; border-radius: 999px; overflow: hidden; background: #EAE8DC;">
+          <div style="position: absolute; inset: 0; background: linear-gradient(90deg, #C0573B 0%, #D69646 20%, #7CC47F 40%, #1F8A5B 70%, #0E5A48 100%);"></div>
+          <div id="gpUnfill" style="position: absolute; top: 0; bottom: 0; right: 0; width: 50%; background: #EAE8DC;"></div>
+        </div>
+        <div style="position: absolute; top: 32px; left: 0%; transform: translateX(-50%);">
+          <div style="width: 2px; height: 16px; margin: 0 auto; background: rgba(20,32,28,.22);"></div>
+          <div style="margin-top: 7px; font-size: .72rem; font-weight: 600; color: #8A968F; text-align: center; font-variant-numeric: tabular-nums;">0</div>
+        </div>
+        <div style="position: absolute; top: 32px; left: 25%; transform: translateX(-50%);">
+          <div style="width: 2px; height: 16px; margin: 0 auto; background: rgba(20,32,28,.22);"></div>
+          <div style="margin-top: 7px; font-size: .72rem; font-weight: 600; color: #8A968F; text-align: center; font-variant-numeric: tabular-nums;">10</div>
+        </div>
+        <div style="position: absolute; top: 32px; left: 50%; transform: translateX(-50%);">
+          <div style="width: 2px; height: 16px; margin: 0 auto; background: rgba(20,32,28,.22);"></div>
+          <div style="margin-top: 7px; font-size: .72rem; font-weight: 600; color: #8A968F; text-align: center; font-variant-numeric: tabular-nums;">20</div>
+        </div>
+        <div style="position: absolute; top: 32px; left: 75%; transform: translateX(-50%);">
+          <div style="width: 2px; height: 16px; margin: 0 auto; background: rgba(20,32,28,.22);"></div>
+          <div style="margin-top: 7px; font-size: .72rem; font-weight: 600; color: #8A968F; text-align: center; font-variant-numeric: tabular-nums;">30</div>
+        </div>
+        <div style="position: absolute; top: 32px; left: 100%; transform: translateX(-50%);">
+          <div style="width: 2px; height: 16px; margin: 0 auto; background: rgba(20,32,28,.22);"></div>
+          <div style="margin-top: 7px; font-size: .72rem; font-weight: 600; color: #8A968F; text-align: center; font-variant-numeric: tabular-nums;">40</div>
+        </div>
+        <div id="gpThumb" style="position: absolute; top: 32px; left: 50%; transform: translate(-50%, -3px); width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 4px rgba(14,90,72,.34), 0 4px 10px rgba(20,32,28,.22); pointer-events: none;"></div>
+        <input id="gpSlider" type="range" min="0" max="40" step="0.1" value="20" style="position: absolute; top: 28px; left: 0; width: 100%; height: 24px; margin: 0; opacity: 0; cursor: pointer;">
+      </div>
+
+      <p style="margin: 14px 0 0; color: #8A968F; font-size: .82rem; font-variant-numeric: tabular-nums;">อิงต้นทุน <span id="capCost">220,000</span> บาท · ปรับทีละ <span id="capStep">0.1</span>%</p>
+    </section>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>

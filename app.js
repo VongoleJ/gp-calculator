@@ -1,159 +1,208 @@
-const GP_MIN = 0;
-const GP_MAX = 40;
-const PRICE_STEP = 100;
+// GP Calculator — vanilla port of the Claude Design "x-dc" prototype logic.
+// Two cards: initial profit/GP from base price + cost, and a GP-target
+// simulator that back-solves the required selling price.
 
-const basePriceEl = document.getElementById("basePrice");
-const costEl = document.getElementById("cost");
-const priceSliderEl = document.getElementById("priceSlider");
-const targetGpInputEl = document.getElementById("targetGpInput");
-const targetGpSliderEl = document.getElementById("targetGpSlider");
+(function () {
+  "use strict";
 
-const refs = {
-  initialProfit: document.getElementById("initialProfit"),
-  initialGp: document.getElementById("initialGp"),
-  priceGpBadge: document.getElementById("priceGpBadge"),
-  priceSliderText: document.getElementById("priceSliderText"),
-  priceMinText: document.getElementById("priceMinText"),
-  priceMaxText: document.getElementById("priceMaxText"),
-  priceModeProfit: document.getElementById("priceModeProfit"),
-  priceModeGp: document.getElementById("priceModeGp"),
-  targetGpText: document.getElementById("targetGpText"),
-  targetGpValue: document.getElementById("targetGpValue"),
-  targetPrice: document.getElementById("targetPrice"),
-  targetProfit: document.getElementById("targetProfit")
-};
+  // ----- configuration (was DCLogic props) -----
+  const ACCENT = "#0E5A48";
+  const GP_MAX = 40;     // slider upper bound (%)
+  const GP_STEP = 0.1;   // slider granularity (%)
 
-const moneyFormatter = new Intl.NumberFormat("th-TH", {
-  maximumFractionDigits: 0
-});
+  // ----- state -----
+  const state = { base: "275,900", cost: "220,000", gp: "20" };
 
-function parseNumber(value) {
-  const normalized = String(value).replace(/[^\d.]/g, "");
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
-}
+  // ----- helpers (ported 1:1 from the prototype) -----
+  const parseNumber = (v) => {
+    const n = Number(String(v).replace(/[^\d.]/g, ""));
+    return Number.isFinite(n) ? Math.max(0, n) : 0;
+  };
+  // Results default to whole baht (0 decimals) but show up to 2 places when
+  // the value actually has a fractional part.
+  const money = (v) =>
+    new Intl.NumberFormat("th-TH", { maximumFractionDigits: 2 }).format(v || 0);
 
-function money(value) {
-  return moneyFormatter.format(Math.round(value || 0));
-}
+  // Live formatter for the money inputs: group the integer part with thousands
+  // separators while preserving an in-progress decimal the user is typing
+  // (a trailing dot or trailing zeros), capped at 2 places. Whole numbers stay
+  // 0-decimals; decimals are allowed but never forced or rounded away mid-type.
+  const groupMoney = (raw) => {
+    let s = String(raw).replace(/[^\d.]/g, "");
+    const firstDot = s.indexOf(".");
+    if (firstDot !== -1) s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g, "");
+    if (s === "") return "";
+    const dot = s.indexOf(".");
+    let intp = dot === -1 ? s : s.slice(0, dot);
+    const decp = dot === -1 ? null : s.slice(dot + 1, dot + 3); // at most 2 decimals
+    intp = intp.replace(/^0+(?=\d)/, "");
+    if (intp === "") intp = "0";
+    const grouped = Number(intp).toLocaleString("th-TH");
+    return decp === null ? grouped : grouped + "." + decp;
+  };
+  const percent = (v) => (Number.isFinite(v) ? v.toFixed(2) + "%" : "-");
+  const shortPercent = (v) => {
+    if (!Number.isFinite(v)) return "-";
+    return (Number.isInteger(v) ? v : v.toFixed(1)) + "%";
+  };
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const gpFrom = (price, cost) => (price <= 0 ? NaN : ((price - cost) / price) * 100);
+  const priceFromGp = (cost, gp) => cost / (1 - gp / 100);
 
-function percent(value) {
-  if (!Number.isFinite(value)) return "-";
-  return `${value.toFixed(2)}%`;
-}
+  const shade = (hex, f) => {
+    const m = hex.replace("#", "");
+    const r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16);
+    const c = (x) => Math.round(Math.min(255, Math.max(0, x))).toString(16).padStart(2, "0");
+    return "#" + c(r * f) + c(g * f) + c(b * f);
+  };
+  const mixWhite = (hex, t) => {
+    const m = hex.replace("#", "");
+    const r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16);
+    const c = (x) => Math.round(x + (255 - x) * t).toString(16).padStart(2, "0");
+    return "#" + c(r) + c(g) + c(b);
+  };
 
-function shortPercent(value) {
-  if (!Number.isFinite(value)) return "-";
-  return `${Number.isInteger(value) ? value : value.toFixed(1)}%`;
-}
+  // warm clay (low) -> gold -> light green (ok ~20%) -> deep brand green (high)
+  const gpColor = (gp) => {
+    const f = GP_MAX / 40;
+    const stops = [
+      [0 * f, [192, 87, 59]],
+      [8 * f, [214, 150, 70]],
+      [16 * f, [124, 196, 127]],
+      [28 * f, [31, 138, 91]],
+      [40 * f, [14, 90, 72]],
+    ];
+    const x = clamp(Number.isFinite(gp) ? gp : 0, stops[0][0], stops[stops.length - 1][0]);
+    let a = stops[0], b = stops[stops.length - 1];
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (x >= stops[i][0] && x <= stops[i + 1][0]) { a = stops[i]; b = stops[i + 1]; break; }
+    }
+    const span = b[0] - a[0] || 1;
+    const tt = (x - a[0]) / span;
+    const ch = (i) => Math.round(a[1][i] + (b[1][i] - a[1][i]) * tt);
+    const rgb = [ch(0), ch(1), ch(2)];
+    const hex = "#" + rgb.map((v) => v.toString(16).padStart(2, "0")).join("");
+    return {
+      hex,
+      glow: `rgba(${rgb[0]},${rgb[1]},${rgb[2]},.34)`,
+      dark: shade(hex, 0.62),
+      soft: mixWhite(hex, 0.87),
+    };
+  };
+  const gpStatus = (gp) => {
+    const f = GP_MAX / 40;
+    if (!Number.isFinite(gp) || gp < 0) return "ขาดทุน";
+    if (gp < 8 * f) return "ต่ำ";
+    if (gp < 16 * f) return "พอใช้";
+    if (gp < 26 * f) return "ดี";
+    return "ดีมาก";
+  };
 
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
+  // ----- DOM -----
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    root: $("appRoot"),
+    base: $("base"),
+    cost: $("cost"),
+    initProfitCard: $("initProfitCard"),
+    initialProfit: $("initialProfit"),
+    initGpCard: $("initGpCard"),
+    initGpLabel: $("initGpLabel"),
+    initStatus: $("initStatus"),
+    initialGp: $("initialGp"),
+    gpText: $("gpText"),
+    gpSlider: $("gpSlider"),
+    exploreGpVal: $("exploreGpVal"),
+    explorePrice: $("explorePrice"),
+    exploreProfit: $("exploreProfit"),
+    gpTooltip: $("gpTooltip"),
+    gpUnfill: $("gpUnfill"),
+    gpThumb: $("gpThumb"),
+    capCost: $("capCost"),
+    capStep: $("capStep"),
+  };
 
-function gpFrom(price, cost) {
-  if (price <= 0) return NaN;
-  return ((price - cost) / price) * 100;
-}
+  // write a field's value only when the user isn't actively editing it,
+  // so reformatting/sync never steals the caret mid-keystroke.
+  const setVal = (node, v) => { if (document.activeElement !== node) node.value = v; };
 
-function priceFromGp(cost, gp) {
-  return cost / (1 - gp / 100);
-}
+  // ----- render -----
+  function render() {
+    const accent2 = shade(ACCENT, 0.74);
+    const accentSoft = mixWhite(ACCENT, 0.86);
+    el.root.style.setProperty("--accent", ACCENT);
+    el.root.style.setProperty("--accent2", accent2);
+    el.root.style.setProperty("--accentSoft", accentSoft);
 
-function roundToStep(value, step) {
-  return Math.round(value / step) * step;
-}
+    const base = parseNumber(state.base);
+    const cost = parseNumber(state.cost);
 
-function formatMoneyInput(input) {
-  const value = parseNumber(input.value);
-  input.value = value ? money(value) : "";
-}
+    // initial card
+    const initProfit = base - cost;
+    const initGp = gpFrom(base, cost);
+    const initCol = gpColor(initGp);
 
-function setTone(element, value) {
-  element.classList.toggle("negative", value < 0);
-  element.classList.toggle("warning", value >= 0 && value < 15);
-  element.classList.toggle("positive", value >= 15);
-}
+    el.initProfitCard.style.background = `linear-gradient(140deg, ${initCol.hex}, ${initCol.dark})`;
+    el.initialProfit.textContent = money(initProfit);
 
-function syncPriceSliderBounds(cost) {
-  const minPrice = roundToStep(priceFromGp(cost, GP_MIN), PRICE_STEP);
-  const maxPrice = roundToStep(priceFromGp(cost, GP_MAX), PRICE_STEP);
-  priceSliderEl.min = String(minPrice);
-  priceSliderEl.max = String(maxPrice);
-  refs.priceMinText.textContent = `0% GP: ${money(minPrice)}`;
-  refs.priceMaxText.textContent = `40% GP: ${money(maxPrice)}`;
-  return { minPrice, maxPrice };
-}
+    el.initGpCard.style.background = initCol.soft;
+    el.initGpCard.style.border = `1px solid ${initCol.hex}`;
+    el.initGpLabel.style.color = initCol.dark;
+    el.initStatus.style.background = initCol.hex;
+    el.initStatus.textContent = gpStatus(initGp);
+    el.initialGp.textContent = percent(initGp);
+    el.initialGp.style.color = initCol.dark;
 
-function updateInitial(basePrice, cost) {
-  const profit = basePrice - cost;
-  const gp = gpFrom(basePrice, cost);
-  refs.initialProfit.textContent = money(profit);
-  refs.initialGp.textContent = percent(gp);
-  setTone(refs.initialProfit, profit);
-  setTone(refs.initialGp, gp);
-}
+    // simulator card
+    const gpNum = clamp(parseNumber(state.gp), 0, GP_MAX);
+    const exPrice = priceFromGp(cost, gpNum);
+    const exProfit = exPrice - cost;
+    const col = gpColor(gpNum);
+    const fill = GP_MAX > 0 ? clamp((gpNum / GP_MAX) * 100, 0, 100) : 0;
 
-function updatePriceMode(basePrice, cost) {
-  const sliderPrice = parseNumber(priceSliderEl.value);
-  const profit = sliderPrice - cost;
-  const gp = gpFrom(sliderPrice, cost);
-  refs.priceSliderText.textContent = `${money(sliderPrice)} บาท`;
-  refs.priceGpBadge.textContent = percent(gp);
-  refs.priceModeProfit.textContent = money(profit);
-  refs.priceModeGp.textContent = percent(gp);
-  setTone(refs.priceGpBadge, gp);
-  setTone(refs.priceModeProfit, profit);
-  setTone(refs.priceModeGp, gp);
-}
+    el.exploreGpVal.textContent = shortPercent(gpNum);
+    el.exploreGpVal.style.color = col.hex;
+    el.explorePrice.textContent = money(exPrice);
+    el.exploreProfit.textContent = money(exProfit);
 
-function updateTargetMode(cost) {
-  const targetGp = clamp(parseNumber(targetGpInputEl.value), GP_MIN, GP_MAX);
-  const targetPrice = priceFromGp(cost, targetGp);
-  const targetProfit = targetPrice - cost;
+    el.gpTooltip.textContent = shortPercent(gpNum);
+    el.gpTooltip.style.left = fill + "%";
+    el.gpTooltip.style.background = col.hex;
 
-  targetGpInputEl.value = shortPercent(targetGp).replace("%", "");
-  targetGpSliderEl.value = String(targetGp);
-  refs.targetGpText.textContent = shortPercent(targetGp);
-  refs.targetGpValue.textContent = shortPercent(targetGp);
-  refs.targetPrice.textContent = money(targetPrice);
-  refs.targetProfit.textContent = money(targetProfit);
-  setTone(refs.targetProfit, targetProfit);
-}
+    el.gpUnfill.style.width = (100 - fill) + "%";
 
-function updateAll(options = {}) {
-  const basePrice = parseNumber(basePriceEl.value);
-  const cost = parseNumber(costEl.value);
-  const bounds = syncPriceSliderBounds(cost);
+    el.gpThumb.style.left = fill + "%";
+    el.gpThumb.style.background = col.hex;
+    el.gpThumb.style.boxShadow = `0 0 0 4px ${col.glow}, 0 4px 10px rgba(20,32,28,.22)`;
 
-  if (options.syncPriceSlider) {
-    priceSliderEl.value = String(clamp(roundToStep(basePrice, PRICE_STEP), bounds.minPrice, bounds.maxPrice));
-  } else {
-    priceSliderEl.value = String(clamp(parseNumber(priceSliderEl.value), bounds.minPrice, bounds.maxPrice));
+    el.capCost.textContent = state.cost;
+
+    // sync controls (without disturbing an active field)
+    setVal(el.base, state.base);
+    setVal(el.cost, state.cost);
+    setVal(el.gpText, state.gp);
+    setVal(el.gpSlider, String(gpNum));
   }
 
-  updateInitial(basePrice, cost);
-  updatePriceMode(basePrice, cost);
-  updateTargetMode(cost);
-}
+  // ----- handlers -----
+  el.base.addEventListener("input", (e) => {
+    state.base = groupMoney(e.target.value); // groups thousands, keeps decimals
+    e.target.value = state.base;
+    render();
+  });
+  el.cost.addEventListener("input", (e) => {
+    state.cost = groupMoney(e.target.value);
+    e.target.value = state.cost;
+    render();
+  });
+  el.gpText.addEventListener("input", (e) => { state.gp = e.target.value; render(); });
+  el.gpSlider.addEventListener("input", (e) => { state.gp = e.target.value; render(); });
 
-function handleMoneyInput(input, options) {
-  formatMoneyInput(input);
-  updateAll(options);
-}
+  // static config-driven labels
+  el.gpSlider.min = "0";
+  el.gpSlider.max = String(GP_MAX);
+  el.gpSlider.step = String(GP_STEP);
+  el.capStep.textContent = String(GP_STEP);
 
-basePriceEl.addEventListener("input", () => handleMoneyInput(basePriceEl, { syncPriceSlider: true }));
-costEl.addEventListener("input", () => handleMoneyInput(costEl, { syncPriceSlider: false }));
-priceSliderEl.addEventListener("input", () => updateAll());
-
-targetGpInputEl.addEventListener("input", () => updateAll());
-targetGpInputEl.addEventListener("blur", () => updateAll());
-
-targetGpSliderEl.addEventListener("input", () => {
-  targetGpInputEl.value = targetGpSliderEl.value;
-  updateAll();
-});
-
-formatMoneyInput(basePriceEl);
-formatMoneyInput(costEl);
-updateAll({ syncPriceSlider: true });
+  render();
+})();
