@@ -16,7 +16,7 @@ const refs = {
   priceMinText: document.getElementById("priceMinText"),
   priceMaxText: document.getElementById("priceMaxText"),
   priceModeProfit: document.getElementById("priceModeProfit"),
-  priceModeDelta: document.getElementById("priceModeDelta"),
+  priceModeGp: document.getElementById("priceModeGp"),
   targetGpText: document.getElementById("targetGpText"),
   targetGpValue: document.getElementById("targetGpValue"),
   targetPrice: document.getElementById("targetPrice"),
@@ -35,11 +35,6 @@ function parseNumber(value) {
 
 function money(value) {
   return moneyFormatter.format(Math.round(value || 0));
-}
-
-function signedMoney(value) {
-  const rounded = Math.round(value || 0);
-  return rounded > 0 ? `+${money(rounded)}` : money(rounded);
 }
 
 function percent(value) {
@@ -106,9 +101,10 @@ function updatePriceMode(basePrice, cost) {
   refs.priceSliderText.textContent = `${money(sliderPrice)} บาท`;
   refs.priceGpBadge.textContent = percent(gp);
   refs.priceModeProfit.textContent = money(profit);
-  refs.priceModeDelta.textContent = signedMoney(sliderPrice - basePrice);
+  refs.priceModeGp.textContent = percent(gp);
   setTone(refs.priceGpBadge, gp);
   setTone(refs.priceModeProfit, profit);
+  setTone(refs.priceModeGp, gp);
 }
 
 function updateTargetMode(cost) {
