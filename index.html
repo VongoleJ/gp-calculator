@@ -67,7 +67,7 @@
             <span style="display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 6px; background: #2563EB; color: #fff; font-size: .72rem; font-weight: 700;">฿</span>ราคาขาย
           </span>
           <span class="ibox-base io-box" style="display: grid; grid-template-columns: 1fr auto; align-items: center; min-height: 56px; border: 1.5px solid #C4D6F7; border-left: 5px solid #2563EB; border-radius: 13px; background: #EFF4FD; padding: 0 14px;">
-            <input id="base" type="text" inputmode="numeric" autocomplete="off" value="275,900" style="border: 0; outline: 0; background: transparent; width: 100%; min-width: 0; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.32rem; font-weight: 600; font-variant-numeric: tabular-nums;">
+            <input id="base" type="text" inputmode="decimal" autocomplete="off" value="275,900" style="border: 0; outline: 0; background: transparent; width: 100%; min-width: 0; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.32rem; font-weight: 600; font-variant-numeric: tabular-nums;">
             <span style="color: #7187AE; font-size: .9rem; font-weight: 600;">บาท</span>
           </span>
         </label>
@@ -76,7 +76,10 @@
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 22px;">
             <span style="font-size: .82rem; font-weight: 600; color: rgba(255,255,255,.82);">กำไรเริ่มต้น</span>
           </div>
-          <strong id="initialProfit" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.95rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums;">55,900</strong>
+          <div style="display: flex; align-items: baseline; gap: 6px;">
+            <strong id="initialProfit" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.95rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums;">55,900</strong>
+            <span style="font-size: .9rem; font-weight: 600; color: rgba(255,255,255,.78);">บาท</span>
+          </div>
         </div>
 
         <label class="io-field">
@@ -84,7 +87,7 @@
             <span style="display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 6px; background: #64748B; color: #fff; font-size: .72rem; font-weight: 700;">−</span>ต้นทุน
           </span>
           <span class="ibox-cost io-box" style="display: grid; grid-template-columns: 1fr auto; align-items: center; min-height: 56px; border: 1.5px solid #D7DBE0; border-left: 5px solid #64748B; border-radius: 13px; background: #F4F5F7; padding: 0 14px;">
-            <input id="cost" type="text" inputmode="numeric" autocomplete="off" value="220,000" style="border: 0; outline: 0; background: transparent; width: 100%; min-width: 0; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.32rem; font-weight: 600; font-variant-numeric: tabular-nums;">
+            <input id="cost" type="text" inputmode="decimal" autocomplete="off" value="220,000" style="border: 0; outline: 0; background: transparent; width: 100%; min-width: 0; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.32rem; font-weight: 600; font-variant-numeric: tabular-nums;">
             <span style="color: #8A929D; font-size: .9rem; font-weight: 600;">บาท</span>
           </span>
         </label>
@@ -108,7 +111,7 @@
         <label style="display: grid; gap: 6px; justify-items: end;">
           <span style="font-size: .78rem; font-weight: 600; color: #5C6B65;">Target GP</span>
           <span class="ibox-target" style="display: inline-grid; grid-template-columns: auto auto; align-items: center; gap: 2px; height: 42px; border: 1.5px solid #E0DED2; border-radius: 11px; background: #FCFCF9; padding: 0 12px;">
-            <input id="gpText" type="text" inputmode="decimal" autocomplete="off" value="20" style="border: 0; outline: 0; background: transparent; width: 68px; text-align: right; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums;">
+            <input id="gpText" type="text" inputmode="decimal" autocomplete="off" value="20" style="border: 0; outline: 0; background: transparent; width: 76px; text-align: right; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums;">
             <span style="color: #8A968F; font-size: .9rem; font-weight: 600;">%</span>
           </span>
         </label>
@@ -121,11 +124,17 @@
         </div>
         <div style="border-radius: 15px; padding: 15px 16px; background: var(--accentSoft, #E3F0EC);">
           <span style="display: block; font-size: .8rem; font-weight: 600; color: var(--accent2, #0A4334); opacity: .85;">ราคาขายที่ต้องใช้</span>
-          <strong id="explorePrice" style="display: block; margin-top: 5px; font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent2, #0A4334);">275,000</strong>
+          <div style="display: flex; align-items: baseline; gap: 5px; margin-top: 5px;">
+            <strong id="explorePrice" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent2, #0A4334);">275,000</strong>
+            <span style="font-size: .8rem; font-weight: 600; color: var(--accent2, #0A4334); opacity: .7;">บาท</span>
+          </div>
         </div>
         <div style="border-radius: 15px; padding: 15px 16px; background: #F6F5EE; border: 1px solid #ECEAE0;">
           <span style="display: block; font-size: .8rem; font-weight: 600; color: #8A968F;">กำไร</span>
-          <strong id="exploreProfit" style="display: block; margin-top: 5px; font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: #0E7C5A;">55,000</strong>
+          <div style="display: flex; align-items: baseline; gap: 5px; margin-top: 5px;">
+            <strong id="exploreProfit" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: #0E7C5A;">55,000</strong>
+            <span style="font-size: .8rem; font-weight: 600; color: #0E7C5A; opacity: .7;">บาท</span>
+          </div>
         </div>
       </div>
 
