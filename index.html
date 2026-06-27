@@ -30,6 +30,11 @@
 
     @media (max-width: 560px) {
       .io-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
+      /* stack as: ราคาขาย, ต้นทุน, กำไรเริ่มต้น, GP เริ่มต้น */
+      .io-grid > :nth-child(1) { order: 1; } /* ราคาขาย */
+      .io-grid > :nth-child(3) { order: 2; } /* ต้นทุน */
+      .io-grid > :nth-child(2) { order: 3; } /* กำไรเริ่มต้น */
+      .io-grid > :nth-child(4) { order: 4; } /* GP เริ่มต้น */
       .io-field .io-box { min-height: 56px; }
       .ex-grid { grid-template-columns: 1fr; }
       .app-header { flex-wrap: wrap; }
@@ -103,7 +108,7 @@
         <label style="display: grid; gap: 6px; justify-items: end;">
           <span style="font-size: .78rem; font-weight: 600; color: #5C6B65;">Target GP</span>
           <span class="ibox-target" style="display: inline-grid; grid-template-columns: auto auto; align-items: center; gap: 2px; height: 42px; border: 1.5px solid #E0DED2; border-radius: 11px; background: #FCFCF9; padding: 0 12px;">
-            <input id="gpText" type="text" inputmode="decimal" autocomplete="off" value="20" style="border: 0; outline: 0; background: transparent; width: 48px; text-align: right; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums;">
+            <input id="gpText" type="text" inputmode="decimal" autocomplete="off" value="20" style="border: 0; outline: 0; background: transparent; width: 68px; text-align: right; color: #16201C; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums;">
             <span style="color: #8A968F; font-size: .9rem; font-weight: 600;">%</span>
           </span>
         </label>
