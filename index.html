@@ -1,341 +1,757 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#165f73">
   <title>GP Calculator</title>
   <style>
     :root {
-      --bg: #f7f8fb;
-      --card: #ffffff;
-      --ink: #15171a;
-      --muted: #667085;
-      --line: #e6e8ee;
-      --accent: #7b1f3a;
-      --accent-2: #f4e7ec;
-      --good: #0f766e;
-      --warn: #b45309;
-      --shadow: 0 18px 50px rgba(16, 24, 40, .10);
-      --radius: 22px;
+      color-scheme: light;
+      --bg: oklch(0.975 0.009 225);
+      --surface: oklch(1 0 0);
+      --surface-soft: oklch(0.955 0.018 222);
+      --surface-strong: oklch(0.91 0.032 220);
+      --ink: oklch(0.19 0.027 245);
+      --muted: oklch(0.42 0.031 242);
+      --subtle: oklch(0.58 0.031 238);
+      --line: oklch(0.86 0.018 230);
+      --accent: oklch(0.46 0.095 215);
+      --accent-dark: oklch(0.34 0.086 218);
+      --accent-soft: oklch(0.91 0.05 205);
+      --success: oklch(0.43 0.105 165);
+      --warning: oklch(0.52 0.13 65);
+      --danger: oklch(0.48 0.155 27);
+      --radius: 14px;
+      --control: 48px;
+      --shadow: 0 8px 24px oklch(0.25 0.03 240 / 0.08);
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thai", "Noto Sans", Arial, sans-serif;
-      background: linear-gradient(180deg, #ffffff 0%, var(--bg) 60%);
+      min-height: 100%;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", "Noto Sans", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 18% 0%, oklch(0.91 0.055 195 / 0.85), transparent 34rem),
+        linear-gradient(180deg, oklch(1 0 0), var(--bg) 22rem);
       color: var(--ink);
     }
+
+    button,
+    input {
+      font: inherit;
+    }
+
     main {
-      width: min(980px, calc(100% - 32px));
-      margin: 34px auto;
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
     }
-    .hero {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-    h1 {
-      margin: 0 0 6px;
-      font-size: clamp(30px, 5vw, 48px);
-      letter-spacing: -0.04em;
-      line-height: 1.05;
-    }
-    .subtitle {
-      margin: 0;
-      color: var(--muted);
-      font-size: 16px;
-    }
-    .badge {
-      background: var(--accent-2);
-      color: var(--accent);
-      border: 1px solid #ead1da;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-weight: 700;
-      white-space: nowrap;
-      margin-top: 5px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1.15fr;
-      gap: 18px;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 22px;
-    }
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 800;
-      color: #31343a;
-      margin-bottom: 8px;
-    }
-    input[type="number"] {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px 14px;
-      font-size: 22px;
-      font-weight: 700;
-      outline: none;
-      background: #fff;
-    }
-    input[type="number"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(123, 31, 58, .10);
-    }
-    .field { margin-bottom: 18px; }
-    .slider-row {
+
+    .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 12px;
+      margin-bottom: 24px;
     }
-    .discount-value {
-      font-size: 44px;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      color: var(--accent);
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
     }
+
+    .mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-weight: 850;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      line-height: 1.2;
+      letter-spacing: 0;
+      text-wrap: balance;
+    }
+
+    .tagline {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.45;
+      text-wrap: pretty;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      padding: 0 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--success);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.5fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 18px;
+    }
+
+    .panel.with-shadow {
+      border-color: transparent;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .hint {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      text-wrap: pretty;
+    }
+
+    .field-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    label,
+    .field-label {
+      color: var(--ink);
+      font-size: 0.9rem;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      height: var(--control);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 52px 0 14px;
+      font-size: 1.12rem;
+      font-weight: 760;
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .input-wrap input:hover {
+      border-color: oklch(0.73 0.035 226);
+    }
+
+    .input-wrap input:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px oklch(0.72 0.1 210 / 0.28);
+    }
+
+    .unit {
+      position: absolute;
+      top: 50%;
+      right: 14px;
+      translate: 0 -50%;
+      color: var(--subtle);
+      font-size: 0.9rem;
+      font-weight: 750;
+      pointer-events: none;
+    }
+
+    .workspace {
+      display: grid;
+      gap: 18px;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .calc-card {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      padding: 0 10px;
+      color: var(--accent-dark);
+      font-size: 0.84rem;
+      font-weight: 780;
+      white-space: nowrap;
+    }
+
+    .range-block {
+      display: grid;
+      gap: 12px;
+    }
+
+    .range-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .range-value {
+      color: var(--accent-dark);
+      font-size: 1.32rem;
+      font-weight: 850;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
     input[type="range"] {
       width: 100%;
+      height: 28px;
+      margin: 0;
       accent-color: var(--accent);
+      cursor: pointer;
     }
-    .quick {
+
+    .range-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--subtle);
+      font-size: 0.82rem;
+      font-weight: 680;
+    }
+
+    .result-strip {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .result {
+      min-width: 0;
+      border-radius: 12px;
+      background: var(--surface-soft);
+      padding: 13px;
+    }
+
+    .result.primary {
+      grid-column: 1 / -1;
+      background: var(--accent-dark);
+      color: white;
+    }
+
+    .result-name {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 760;
+      line-height: 1.35;
+    }
+
+    .primary .result-name {
+      color: oklch(0.92 0.025 220);
+    }
+
+    .result-value {
+      display: block;
+      margin-top: 6px;
+      color: var(--ink);
+      font-size: 1.36rem;
+      font-weight: 850;
+      line-height: 1.08;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .primary .result-value {
+      color: white;
+      font-size: 1.75rem;
+    }
+
+    .positive {
+      color: var(--success);
+    }
+
+    .warning {
+      color: var(--warning);
+    }
+
+    .negative {
+      color: var(--danger);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-item {
+      min-width: 0;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 13px;
+    }
+
+    .summary-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 760;
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 1.1rem;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+      text-wrap: pretty;
+    }
+
+    .formula-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-top: 12px;
     }
-    button {
-      border: 1px solid var(--line);
-      background: #fff;
+
+    .formula-chip {
       border-radius: 999px;
-      padding: 9px 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    button:hover { border-color: var(--accent); color: var(--accent); }
-    .result-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .metric {
-      background: #fafbfc;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
-      min-height: 118px;
-    }
-    .metric .name {
+      background: var(--surface-soft);
+      padding: 7px 10px;
       color: var(--muted);
-      font-size: 14px;
-      font-weight: 800;
-      margin-bottom: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
     }
-    .metric .value {
-      font-size: clamp(24px, 4vw, 34px);
-      line-height: 1.05;
-      font-weight: 900;
-      letter-spacing: -0.04em;
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
-    .gp-positive { color: var(--good); }
-    .gp-low { color: var(--warn); }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 4px;
-      font-size: 16px;
+
+    @media (max-width: 700px) {
+      main {
+        width: min(100% - 24px, 1120px);
+        padding-top: 18px;
+      }
+
+      .topbar {
+        display: grid;
+        gap: 12px;
+      }
+
+      .status-pill {
+        width: max-content;
+      }
+
+      .calc-grid,
+      .result-strip,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 15px;
+      }
+
+      .panel-head {
+        display: grid;
+        gap: 10px;
+      }
+
+      .mode-badge {
+        width: max-content;
+      }
+
+      .primary .result-value {
+        font-size: 1.55rem;
+      }
     }
-    th, td {
-      text-align: right;
-      border-bottom: 1px solid var(--line);
-      padding: 12px 6px;
-      white-space: nowrap;
-    }
-    th:first-child, td:first-child { text-align: left; }
-    th {
-      color: #30343b;
-      font-weight: 900;
-      font-size: 14px;
-    }
-    tr.active {
-      background: var(--accent-2);
-      font-weight: 900;
-    }
-    .formula {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 16px;
-      background: #fbfcfe;
-      border: 1px dashed var(--line);
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.55;
-    }
-    @media (max-width: 780px) {
-      main { width: min(100% - 22px, 980px); margin: 22px auto; }
-      .hero { display: block; }
-      .badge { display: inline-block; margin-top: 12px; }
-      .grid, .result-grid { grid-template-columns: 1fr; }
-      .card { padding: 18px; }
-      table { font-size: 14px; }
-      th, td { padding: 11px 4px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
   <main>
-    <section class="hero">
-      <div>
-        <h1>GP Calculator</h1>
-        <p class="subtitle">คำนวณราคาหลังลด กำไร และ GP% แบบเลื่อน Slider</p>
-      </div>
-      <div class="badge">Single-file HTML • No backend</div>
-    </section>
-
-    <section class="grid">
-      <div class="card">
-        <div class="field">
-          <label for="sellPrice">ราคาขายตั้งต้น (บาท)</label>
-          <input id="sellPrice" type="number" inputmode="decimal" min="0" step="100" value="275900">
-        </div>
-
-        <div class="field">
-          <label for="cost">ต้นทุน (บาท)</label>
-          <input id="cost" type="number" inputmode="decimal" min="0" step="100" value="220000">
-        </div>
-
-        <div class="field">
-          <div class="slider-row">
-            <label for="discount" style="margin:0;">ส่วนลด (%)</label>
-            <div class="discount-value"><span id="discountText">2</span>%</div>
-          </div>
-          <input id="discount" type="range" min="0" max="30" step="0.5" value="2">
-          <div class="quick" aria-label="Quick discount buttons">
-            <button type="button" data-discount="0">0%</button>
-            <button type="button" data-discount="2">2%</button>
-            <button type="button" data-discount="3">3%</button>
-            <button type="button" data-discount="5">5%</button>
-            <button type="button" data-discount="7">7%</button>
-            <button type="button" data-discount="10">10%</button>
-          </div>
-        </div>
-
-        <div class="formula">
-          <strong>สูตร:</strong><br>
-          ราคาขายใหม่ = ราคาขายตั้งต้น × (1 − ส่วนลด%)<br>
-          กำไร = ราคาขายใหม่ − ต้นทุน<br>
-          GP% = กำไร ÷ ราคาขายใหม่ × 100
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">GP</div>
+        <div>
+          <h1>เครื่องคำนวณกำไรและ GP</h1>
+          <p class="tagline">คำนวณราคาขาย กำไร และ GP สำหรับการตั้งราคาแบบเร็วบนมือถือ</p>
         </div>
       </div>
+      <div class="status-pill" aria-label="สถานะระบบ">
+        <span class="status-dot" aria-hidden="true"></span>
+        ใช้งานบน GitHub Pages
+      </div>
+    </header>
 
-      <div class="card">
-        <div class="result-grid">
-          <div class="metric">
-            <div class="name">ราคาขายใหม่</div>
-            <div class="value" id="newPrice">270,382</div>
-          </div>
-          <div class="metric">
-            <div class="name">กำไร</div>
-            <div class="value" id="profit">50,382</div>
-          </div>
-          <div class="metric">
-            <div class="name">GP</div>
-            <div class="value gp-positive" id="gp">18.63%</div>
+    <section class="layout" aria-label="เครื่องคำนวณ GP">
+      <aside class="panel with-shadow">
+        <div class="panel-head">
+          <div>
+            <h2>ข้อมูลตั้งต้น</h2>
+            <p class="hint">กรอกราคาขายและต้นทุน ระบบจะคำนวณทั้งสองฝั่งให้ทันที</p>
           </div>
         </div>
 
-        <table aria-label="Discount comparison table">
-          <thead>
-            <tr>
-              <th>ลดราคา</th>
-              <th>ราคาขายใหม่</th>
-              <th>กำไร</th>
-              <th>GP</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
+        <div class="field-stack">
+          <div class="field">
+            <label for="basePrice">ราคาขาย</label>
+            <div class="input-wrap">
+              <input id="basePrice" type="number" inputmode="decimal" min="0" step="100" value="275900" autocomplete="off">
+              <span class="unit">บาท</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="cost">ต้นทุน</label>
+            <div class="input-wrap">
+              <input id="cost" type="number" inputmode="decimal" min="0" step="100" value="220000" autocomplete="off">
+              <span class="unit">บาท</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="formula-row" aria-label="สูตรคำนวณ">
+          <span class="formula-chip">กำไร = ราคาขาย - ต้นทุน</span>
+          <span class="formula-chip">GP = กำไร / ราคาขาย</span>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <div class="calc-grid">
+          <section class="panel calc-card" aria-labelledby="priceModeTitle">
+            <div class="panel-head">
+              <div>
+                <h2 id="priceModeTitle">เลื่อนราคาขาย</h2>
+                <p class="hint">ปรับราคาขายเพื่อดูผลกระทบต่อกำไรและ GP</p>
+              </div>
+              <span class="mode-badge">คำนวณจากราคา</span>
+            </div>
+
+            <div class="range-block">
+              <div class="range-line">
+                <label class="field-label" for="priceSlider">ราคาขายที่ใช้คำนวณ</label>
+                <strong class="range-value" id="priceSliderText">275,900 บาท</strong>
+              </div>
+              <input id="priceSlider" type="range" min="0" max="500000" step="100" value="275900">
+              <div class="range-meta">
+                <span id="priceMinText">0</span>
+                <span id="priceMaxText">500,000</span>
+              </div>
+            </div>
+
+            <div class="result-strip">
+              <div class="result primary">
+                <span class="result-name">GP ที่ได้</span>
+                <strong class="result-value" id="priceModeGp">20.26%</strong>
+              </div>
+              <div class="result">
+                <span class="result-name">กำไร</span>
+                <strong class="result-value" id="priceModeProfit">55,900</strong>
+              </div>
+              <div class="result">
+                <span class="result-name">ส่วนต่างจากราคาตั้งต้น</span>
+                <strong class="result-value" id="priceModeDelta">0</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel calc-card" aria-labelledby="targetModeTitle">
+            <div class="panel-head">
+              <div>
+                <h2 id="targetModeTitle">ตั้งเป้า GP</h2>
+                <p class="hint">เลือก GP เป้าหมาย ระบบจะย้อนหาราคาขายที่ต้องใช้</p>
+              </div>
+              <span class="mode-badge">ย้อนกลับจาก GP</span>
+            </div>
+
+            <div class="field">
+              <label for="targetGpInput">Target GP</label>
+              <div class="input-wrap">
+                <input id="targetGpInput" type="number" inputmode="decimal" min="0" max="70" step="0.5" value="20" autocomplete="off">
+                <span class="unit">%</span>
+              </div>
+            </div>
+
+            <div class="range-block">
+              <div class="range-line">
+                <label class="field-label" for="targetGpSlider">เลื่อน GP เป้าหมาย</label>
+                <strong class="range-value" id="targetGpText">20%</strong>
+              </div>
+              <input id="targetGpSlider" type="range" min="0" max="70" step="0.5" value="20">
+              <div class="range-meta">
+                <span>0%</span>
+                <span>70%</span>
+              </div>
+            </div>
+
+            <div class="result-strip">
+              <div class="result primary">
+                <span class="result-name">ราคาขายที่ต้องใช้</span>
+                <strong class="result-value" id="targetPrice">275,000</strong>
+              </div>
+              <div class="result">
+                <span class="result-name">กำไรที่ได้</span>
+                <strong class="result-value" id="targetProfit">55,000</strong>
+              </div>
+              <div class="result">
+                <span class="result-name">เทียบราคาตั้งต้น</span>
+                <strong class="result-value" id="targetDelta">-900</strong>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="summary" aria-label="สรุปข้อมูล">
+          <div class="summary-item">
+            <span>ราคาขายตั้งต้น</span>
+            <strong id="summaryBase">275,900</strong>
+          </div>
+          <div class="summary-item">
+            <span>ต้นทุน</span>
+            <strong id="summaryCost">220,000</strong>
+          </div>
+          <div class="summary-item">
+            <span>GP จากราคาตั้งต้น</span>
+            <strong id="summaryGp">20.26%</strong>
+          </div>
+          <div class="summary-item">
+            <span>กำไรจากราคาตั้งต้น</span>
+            <strong id="summaryProfit">55,900</strong>
+          </div>
+        </section>
+
+        <p class="note">หมายเหตุ: สูตรย้อนกลับใช้ ราคาขาย = ต้นทุน / (1 - Target GP) และปัดผลลัพธ์เป็นจำนวนเต็มบาท</p>
       </div>
     </section>
   </main>
 
   <script>
-    const sellPriceEl = document.getElementById('sellPrice');
-    const costEl = document.getElementById('cost');
-    const discountEl = document.getElementById('discount');
-    const discountTextEl = document.getElementById('discountText');
-    const newPriceEl = document.getElementById('newPrice');
-    const profitEl = document.getElementById('profit');
-    const gpEl = document.getElementById('gp');
-    const tableBodyEl = document.getElementById('tableBody');
+    const basePriceEl = document.getElementById("basePrice");
+    const costEl = document.getElementById("cost");
+    const priceSliderEl = document.getElementById("priceSlider");
+    const targetGpInputEl = document.getElementById("targetGpInput");
+    const targetGpSliderEl = document.getElementById("targetGpSlider");
 
-    const comparisonDiscounts = [0, 2, 3, 5, 7, 10, 15, 20, 25, 30];
+    const refs = {
+      priceSliderText: document.getElementById("priceSliderText"),
+      priceMinText: document.getElementById("priceMinText"),
+      priceMaxText: document.getElementById("priceMaxText"),
+      priceModeGp: document.getElementById("priceModeGp"),
+      priceModeProfit: document.getElementById("priceModeProfit"),
+      priceModeDelta: document.getElementById("priceModeDelta"),
+      targetGpText: document.getElementById("targetGpText"),
+      targetPrice: document.getElementById("targetPrice"),
+      targetProfit: document.getElementById("targetProfit"),
+      targetDelta: document.getElementById("targetDelta"),
+      summaryBase: document.getElementById("summaryBase"),
+      summaryCost: document.getElementById("summaryCost"),
+      summaryGp: document.getElementById("summaryGp"),
+      summaryProfit: document.getElementById("summaryProfit")
+    };
 
-    function fmtMoney(value) {
-      return Math.round(value).toLocaleString('th-TH');
-    }
-
-    function fmtPercent(value) {
-      if (!Number.isFinite(value)) return '-';
-      return value.toFixed(2) + '%';
-    }
-
-    function calc(sellPrice, cost, discount) {
-      const newPrice = sellPrice * (1 - discount / 100);
-      const profit = newPrice - cost;
-      const gp = newPrice === 0 ? NaN : (profit / newPrice) * 100;
-      return { newPrice, profit, gp };
-    }
-
-    function update() {
-      const sellPrice = Number(sellPriceEl.value) || 0;
-      const cost = Number(costEl.value) || 0;
-      const discount = Number(discountEl.value) || 0;
-
-      discountTextEl.textContent = Number.isInteger(discount) ? String(discount) : discount.toFixed(1);
-
-      const result = calc(sellPrice, cost, discount);
-      newPriceEl.textContent = fmtMoney(result.newPrice);
-      profitEl.textContent = fmtMoney(result.profit);
-      gpEl.textContent = fmtPercent(result.gp);
-      gpEl.classList.toggle('gp-low', result.gp < 15);
-      gpEl.classList.toggle('gp-positive', result.gp >= 15);
-
-      const allDiscounts = Array.from(new Set([...comparisonDiscounts, discount])).sort((a,b) => a-b);
-      tableBodyEl.innerHTML = allDiscounts.map(d => {
-        const r = calc(sellPrice, cost, d);
-        const isActive = Math.abs(d - discount) < 0.0001;
-        const dText = Number.isInteger(d) ? d : d.toFixed(1);
-        return `<tr class="${isActive ? 'active' : ''}">
-          <td>${dText}%</td>
-          <td>${fmtMoney(r.newPrice)}</td>
-          <td>${fmtMoney(r.profit)}</td>
-          <td>${fmtPercent(r.gp)}</td>
-        </tr>`;
-      }).join('');
-    }
-
-    [sellPriceEl, costEl, discountEl].forEach(el => el.addEventListener('input', update));
-
-    document.querySelectorAll('[data-discount]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        discountEl.value = btn.dataset.discount;
-        update();
-      });
+    const formatter = new Intl.NumberFormat("th-TH", {
+      maximumFractionDigits: 0
     });
 
-    update();
+    function toNumber(value) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+    }
+
+    function money(value) {
+      return formatter.format(Math.round(value || 0));
+    }
+
+    function percent(value) {
+      if (!Number.isFinite(value)) return "-";
+      return `${value.toFixed(2)}%`;
+    }
+
+    function signedMoney(value) {
+      const rounded = Math.round(value || 0);
+      if (rounded > 0) return `+${money(rounded)}`;
+      return money(rounded);
+    }
+
+    function gpFrom(price, cost) {
+      if (price <= 0) return NaN;
+      return ((price - cost) / price) * 100;
+    }
+
+    function priceFromTargetGp(cost, targetGp) {
+      if (targetGp >= 100) return Infinity;
+      return cost / (1 - targetGp / 100);
+    }
+
+    function setTone(element, value) {
+      element.classList.toggle("negative", value < 0);
+      element.classList.toggle("warning", value >= 0 && value < 15);
+      element.classList.toggle("positive", value >= 15);
+    }
+
+    function syncPriceSliderBounds(basePrice, cost) {
+      const usefulMax = Math.max(basePrice, cost, 100000) * 1.6;
+      const roundedMax = Math.ceil(usefulMax / 10000) * 10000;
+      priceSliderEl.max = String(roundedMax);
+      refs.priceMaxText.textContent = money(roundedMax);
+      refs.priceMinText.textContent = "0";
+    }
+
+    function updatePriceMode(basePrice, cost) {
+      const sliderPrice = toNumber(priceSliderEl.value);
+      const profit = sliderPrice - cost;
+      const gp = gpFrom(sliderPrice, cost);
+
+      refs.priceSliderText.textContent = `${money(sliderPrice)} บาท`;
+      refs.priceModeGp.textContent = percent(gp);
+      refs.priceModeProfit.textContent = money(profit);
+      refs.priceModeDelta.textContent = signedMoney(sliderPrice - basePrice);
+      setTone(refs.priceModeGp, gp);
+      setTone(refs.priceModeProfit, profit);
+    }
+
+    function updateTargetMode(basePrice, cost) {
+      const targetGp = Math.min(70, toNumber(targetGpInputEl.value));
+      const requiredPrice = priceFromTargetGp(cost, targetGp);
+      const targetProfit = requiredPrice - cost;
+
+      targetGpInputEl.value = String(targetGp);
+      targetGpSliderEl.value = String(targetGp);
+      refs.targetGpText.textContent = `${Number.isInteger(targetGp) ? targetGp : targetGp.toFixed(1)}%`;
+      refs.targetPrice.textContent = money(requiredPrice);
+      refs.targetProfit.textContent = money(targetProfit);
+      refs.targetDelta.textContent = signedMoney(requiredPrice - basePrice);
+      setTone(refs.targetProfit, targetProfit);
+    }
+
+    function updateSummary(basePrice, cost) {
+      const profit = basePrice - cost;
+      const gp = gpFrom(basePrice, cost);
+
+      refs.summaryBase.textContent = money(basePrice);
+      refs.summaryCost.textContent = money(cost);
+      refs.summaryGp.textContent = percent(gp);
+      refs.summaryProfit.textContent = money(profit);
+      setTone(refs.summaryGp, gp);
+      setTone(refs.summaryProfit, profit);
+    }
+
+    function updateAll(options = {}) {
+      const basePrice = toNumber(basePriceEl.value);
+      const cost = toNumber(costEl.value);
+
+      syncPriceSliderBounds(basePrice, cost);
+
+      if (options.syncSliderToBase) {
+        priceSliderEl.value = String(basePrice);
+      }
+
+      updatePriceMode(basePrice, cost);
+      updateTargetMode(basePrice, cost);
+      updateSummary(basePrice, cost);
+    }
+
+    basePriceEl.addEventListener("input", () => updateAll({ syncSliderToBase: true }));
+    costEl.addEventListener("input", () => updateAll());
+    priceSliderEl.addEventListener("input", () => updateAll());
+    targetGpInputEl.addEventListener("input", () => updateAll());
+    targetGpSliderEl.addEventListener("input", () => {
+      targetGpInputEl.value = targetGpSliderEl.value;
+      updateAll();
+    });
+
+    updateAll({ syncSliderToBase: true });
   </script>
 </body>
 </html>
