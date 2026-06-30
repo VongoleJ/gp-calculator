@@ -27,6 +27,14 @@
     .io-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; column-gap: 20px; row-gap: 12px; align-items: stretch; }
     .io-field { display: grid; grid-template-rows: auto 1fr; gap: 7px; }
     .ex-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+    .discount-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #ECEAE0; border-radius: 14px; background: #fff; }
+    .discount-table { width: 100%; min-width: 620px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .discount-table th { padding: 12px 14px; background: #F6F5EE; color: #4E5D57; font-size: .8rem; font-weight: 700; text-align: right; border-bottom: 1px solid #E4E2D7; }
+    .discount-table th:first-child, .discount-table td:first-child { text-align: left; }
+    .discount-table td { padding: 14px; color: #16201C; font-family: 'Space Grotesk', 'IBM Plex Sans Thai', sans-serif; font-size: 1.08rem; font-weight: 600; text-align: right; border-bottom: 1px solid #F0EEE5; }
+    .discount-table tr:last-child td { border-bottom: 0; }
+    .discount-table .discount-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 48px; height: 30px; padding: 0 10px; border-radius: 999px; background: #F0F4F2; color: #0A4335; font-size: .92rem; font-weight: 700; }
+    .discount-table .gp-cell { font-weight: 700; }
 
     @media (max-width: 560px) {
       .io-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
@@ -39,6 +47,8 @@
       .ex-grid { grid-template-columns: 1fr; }
       .app-header { flex-wrap: wrap; }
       .app-header img { height: 40px; max-width: 100%; }
+      .discount-table { min-width: 560px; }
+      .discount-table th, .discount-table td { padding: 12px 11px; }
     }
   </style>
 </head>
@@ -171,9 +181,32 @@
       <p style="margin: 14px 0 0; color: #8A968F; font-size: .82rem; font-variant-numeric: tabular-nums;">อิงต้นทุน <span id="capCost">220,000</span> บาท · ปรับทีละ <span id="capStep">0.1</span>%</p>
     </section>
 
+    <section style="background: #fff; border: 1px solid #E4E2D7; border-radius: 20px; padding: 22px; box-shadow: 0 1px 2px rgba(20,32,28,.04), 0 14px 32px rgba(20,32,28,.05); margin-top: 16px;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 16px;">
+        <div>
+          <h2 style="margin: 0; font-size: 1.12rem; font-weight: 700;">ตารางส่วนลด</h2>
+          <p style="margin: 4px 0 0; color: #5C6B65; font-size: .9rem;">เทียบราคาขายใหม่ กำไร และ GP หลังลดราคาจากราคาขายตั้งต้น</p>
+        </div>
+      </div>
+
+      <div class="discount-scroll" aria-label="ตารางคำนวณส่วนลด">
+        <table class="discount-table">
+          <thead>
+            <tr>
+              <th scope="col">ลดราคา</th>
+              <th scope="col">ราคาขายใหม่ (บาท)</th>
+              <th scope="col">กำไร (บาท)</th>
+              <th scope="col">GP (%)</th>
+            </tr>
+          </thead>
+          <tbody id="discountRows"></tbody>
+        </table>
+      </div>
+    </section>
+
   </div>
 </div>
 
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
