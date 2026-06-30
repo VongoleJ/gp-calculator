@@ -10,7 +10,7 @@
   const GP_MAX = 40;     // slider upper bound (%)
   const GP_STEP = 0.1;   // slider granularity (%)
   const DISCOUNT_MAX = 20;
-  const DISCOUNT_STEP = 0.1;
+  const DISCOUNT_STEP = 1;
 
   // ----- state -----
   const state = { base: "275,900", cost: "220,000", gp: "20", discount: "0" };
