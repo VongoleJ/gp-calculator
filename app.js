@@ -9,6 +9,7 @@
   const ACCENT = "#0E5A48";
   const GP_MAX = 40;     // slider upper bound (%)
   const GP_STEP = 0.1;   // slider granularity (%)
+  const DISCOUNT_RATES = [0, 2, 3, 5, 7];
 
   // ----- state -----
   const state = { base: "275,900", cost: "220,000", gp: "20" };
@@ -120,11 +121,48 @@
     gpThumb: $("gpThumb"),
     capCost: $("capCost"),
     capStep: $("capStep"),
+    discountRows: $("discountRows"),
   };
 
   // write a field's value only when the user isn't actively editing it,
   // so reformatting/sync never steals the caret mid-keystroke.
   const setVal = (node, v) => { if (document.activeElement !== node) node.value = v; };
+
+  const appendCell = (row, text, className) => {
+    const cell = document.createElement("td");
+    cell.textContent = text;
+    if (className) cell.className = className;
+    row.appendChild(cell);
+    return cell;
+  };
+
+  function renderDiscountRows(base, cost) {
+    const frag = document.createDocumentFragment();
+
+    DISCOUNT_RATES.forEach((rate) => {
+      const price = base * (1 - rate / 100);
+      const profit = price - cost;
+      const gp = gpFrom(price, cost);
+      const col = gpColor(gp);
+      const row = document.createElement("tr");
+
+      const discountCell = document.createElement("td");
+      const pill = document.createElement("span");
+      pill.className = "discount-pill";
+      pill.textContent = `${rate}%`;
+      discountCell.appendChild(pill);
+      row.appendChild(discountCell);
+
+      appendCell(row, money(price));
+      appendCell(row, money(profit));
+      const gpCell = appendCell(row, shortPercent(gp), "gp-cell");
+      gpCell.style.color = Number.isFinite(gp) ? col.dark : "#8A968F";
+
+      frag.appendChild(row);
+    });
+
+    el.discountRows.replaceChildren(frag);
+  }
 
   // ----- render -----
   function render() {
@@ -176,6 +214,7 @@
     el.gpThumb.style.boxShadow = `0 0 0 4px ${col.glow}, 0 4px 10px rgba(20,32,28,.22)`;
 
     el.capCost.textContent = state.cost;
+    renderDiscountRows(base, cost);
 
     // sync controls (without disturbing an active field)
     setVal(el.base, state.base);
