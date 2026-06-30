@@ -27,14 +27,21 @@
     .io-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; column-gap: 20px; row-gap: 12px; align-items: stretch; }
     .io-field { display: grid; grid-template-rows: auto 1fr; gap: 7px; }
     .ex-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 22px; }
-    .discount-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #ECEAE0; border-radius: 14px; background: #fff; }
-    .discount-table { width: 100%; min-width: 620px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-    .discount-table th { padding: 12px 14px; background: #F6F5EE; color: #4E5D57; font-size: .8rem; font-weight: 700; text-align: right; border-bottom: 1px solid #E4E2D7; }
-    .discount-table th:first-child, .discount-table td:first-child { text-align: left; }
-    .discount-table td { padding: 14px; color: #16201C; font-family: 'Space Grotesk', 'IBM Plex Sans Thai', sans-serif; font-size: 1.08rem; font-weight: 600; text-align: right; border-bottom: 1px solid #F0EEE5; }
-    .discount-table tr:last-child td { border-bottom: 0; }
-    .discount-table .discount-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 48px; height: 30px; padding: 0 10px; border-radius: 999px; background: #F0F4F2; color: #0A4335; font-size: .92rem; font-weight: 700; }
-    .discount-table .gp-cell { font-weight: 700; }
+    .discount-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 18px; }
+    .discount-card { border-radius: 15px; padding: 15px 16px; background: #F6F5EE; border: 1px solid #ECEAE0; min-width: 0; }
+    .discount-card span { display: block; font-size: .8rem; font-weight: 600; color: #6B7973; }
+    .discount-card strong { display: block; margin-top: 5px; font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .discount-card .money-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 5px; margin-top: 5px; }
+    .discount-card .money-row strong { margin-top: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .discount-card .unit { color: inherit; opacity: .72; font-size: .8rem; font-weight: 600; }
+    .discount-slider-shell { position: relative; height: 78px; margin-top: 20px; }
+    .discount-slider-track { position: absolute; left: 0; right: 0; top: 38px; height: 16px; border-radius: 999px; overflow: hidden; background: #EAE8DC; }
+    .discount-slider-fill { position: absolute; inset: 0 auto 0 0; width: 0%; background: linear-gradient(90deg, #0E5A48 0%, #D69646 70%, #C0573B 100%); }
+    .discount-tooltip { position: absolute; top: 0; left: 0; transform: translateX(-50%); padding: 3px 10px; border-radius: 8px; background: #0E5A48; color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: .84rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .discount-thumb { position: absolute; top: 38px; left: 0; transform: translate(-50%, -3px); width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; background: #0E5A48; box-shadow: 0 0 0 4px rgba(14,90,72,.26), 0 4px 10px rgba(20,32,28,.18); pointer-events: none; }
+    .discount-range { position: absolute; top: 34px; left: 0; width: 100%; height: 24px; margin: 0; opacity: 0; cursor: pointer; }
+    .discount-mark { position: absolute; top: 38px; transform: translateX(-50%); color: #8A968F; font-size: .72rem; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+    .discount-mark::before { content: ""; display: block; width: 2px; height: 16px; margin: 0 auto 7px; background: rgba(20,32,28,.22); }
 
     @media (max-width: 560px) {
       .io-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
@@ -45,10 +52,9 @@
       .io-grid > :nth-child(4) { order: 4; } /* GP เริ่มต้น */
       .io-field .io-box { min-height: 56px; }
       .ex-grid { grid-template-columns: 1fr; }
+      .discount-grid { grid-template-columns: 1fr; }
       .app-header { flex-wrap: wrap; }
       .app-header img { height: 40px; max-width: 100%; }
-      .discount-table { min-width: 560px; }
-      .discount-table th, .discount-table td { padding: 12px 11px; }
     }
   </style>
 </head>
@@ -182,31 +188,51 @@
     </section>
 
     <section style="background: #fff; border: 1px solid #E4E2D7; border-radius: 20px; padding: 22px; box-shadow: 0 1px 2px rgba(20,32,28,.04), 0 14px 32px rgba(20,32,28,.05); margin-top: 16px;">
-      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 16px;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 4px;">
         <div>
-          <h2 style="margin: 0; font-size: 1.12rem; font-weight: 700;">ตารางส่วนลด</h2>
-          <p style="margin: 4px 0 0; color: #5C6B65; font-size: .9rem;">เทียบราคาขายใหม่ กำไร และ GP หลังลดราคาจากราคาขายตั้งต้น</p>
+          <h2 style="margin: 0; font-size: 1.12rem; font-weight: 700;">จำลองส่วนลด</h2>
+          <p style="margin: 4px 0 0; color: #5C6B65; font-size: .9rem;">เลื่อนเพื่อดูราคาขายใหม่ กำไร และ GP หลังลดราคาจากราคาขายตั้งต้น</p>
         </div>
+        <strong id="discountHeaderValue" style="font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--accent2, #0A4334); font-variant-numeric: tabular-nums; white-space: nowrap;">0%</strong>
       </div>
 
-      <div class="discount-scroll" aria-label="ตารางคำนวณส่วนลด">
-        <table class="discount-table">
-          <thead>
-            <tr>
-              <th scope="col">ลดราคา</th>
-              <th scope="col">ราคาขายใหม่ (บาท)</th>
-              <th scope="col">กำไร (บาท)</th>
-              <th scope="col">GP (%)</th>
-            </tr>
-          </thead>
-          <tbody id="discountRows"></tbody>
-        </table>
+      <div class="discount-slider-shell">
+        <div id="discountTooltip" class="discount-tooltip">0%</div>
+        <div class="discount-slider-track"><div id="discountFill" class="discount-slider-fill"></div></div>
+        <div class="discount-mark" style="left: 0%;">0</div>
+        <div class="discount-mark" style="left: 25%;">5</div>
+        <div class="discount-mark" style="left: 50%;">10</div>
+        <div class="discount-mark" style="left: 75%;">15</div>
+        <div class="discount-mark" style="left: 100%;">20</div>
+        <div id="discountThumb" class="discount-thumb"></div>
+        <input id="discountSlider" class="discount-range" type="range" min="0" max="20" step="0.1" value="0" aria-label="เปอร์เซ็นต์ส่วนลด">
+      </div>
+
+      <div class="discount-grid">
+        <div class="discount-card" style="background: var(--accentSoft, #E3F0EC); border-color: transparent;">
+          <span style="color: var(--accent2, #0A4334); opacity: .85;">ราคาขายใหม่</span>
+          <div class="money-row" style="color: var(--accent2, #0A4334);">
+            <strong id="discountPrice">275,900</strong>
+            <span class="unit">บาท</span>
+          </div>
+        </div>
+        <div class="discount-card">
+          <span>กำไร</span>
+          <div class="money-row" style="color: #0E7C5A;">
+            <strong id="discountProfit">55,900</strong>
+            <span class="unit">บาท</span>
+          </div>
+        </div>
+        <div class="discount-card">
+          <span>GP หลังลดราคา</span>
+          <strong id="discountGp" style="color: var(--accent2, #0A4334);">20.26%</strong>
+        </div>
       </div>
     </section>
 
   </div>
 </div>
 
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
