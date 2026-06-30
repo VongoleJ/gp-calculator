@@ -9,10 +9,11 @@
   const ACCENT = "#0E5A48";
   const GP_MAX = 40;     // slider upper bound (%)
   const GP_STEP = 0.1;   // slider granularity (%)
-  const DISCOUNT_RATES = [0, 2, 3, 5, 7];
+  const DISCOUNT_MAX = 20;
+  const DISCOUNT_STEP = 0.1;
 
   // ----- state -----
-  const state = { base: "275,900", cost: "220,000", gp: "20" };
+  const state = { base: "275,900", cost: "220,000", gp: "20", discount: "0" };
 
   // ----- helpers (ported 1:1 from the prototype) -----
   const parseNumber = (v) => {
@@ -121,48 +122,19 @@
     gpThumb: $("gpThumb"),
     capCost: $("capCost"),
     capStep: $("capStep"),
-    discountRows: $("discountRows"),
+    discountHeaderValue: $("discountHeaderValue"),
+    discountTooltip: $("discountTooltip"),
+    discountFill: $("discountFill"),
+    discountThumb: $("discountThumb"),
+    discountSlider: $("discountSlider"),
+    discountPrice: $("discountPrice"),
+    discountProfit: $("discountProfit"),
+    discountGp: $("discountGp"),
   };
 
   // write a field's value only when the user isn't actively editing it,
   // so reformatting/sync never steals the caret mid-keystroke.
   const setVal = (node, v) => { if (document.activeElement !== node) node.value = v; };
-
-  const appendCell = (row, text, className) => {
-    const cell = document.createElement("td");
-    cell.textContent = text;
-    if (className) cell.className = className;
-    row.appendChild(cell);
-    return cell;
-  };
-
-  function renderDiscountRows(base, cost) {
-    const frag = document.createDocumentFragment();
-
-    DISCOUNT_RATES.forEach((rate) => {
-      const price = base * (1 - rate / 100);
-      const profit = price - cost;
-      const gp = gpFrom(price, cost);
-      const col = gpColor(gp);
-      const row = document.createElement("tr");
-
-      const discountCell = document.createElement("td");
-      const pill = document.createElement("span");
-      pill.className = "discount-pill";
-      pill.textContent = `${rate}%`;
-      discountCell.appendChild(pill);
-      row.appendChild(discountCell);
-
-      appendCell(row, money(price));
-      appendCell(row, money(profit));
-      const gpCell = appendCell(row, shortPercent(gp), "gp-cell");
-      gpCell.style.color = Number.isFinite(gp) ? col.dark : "#8A968F";
-
-      frag.appendChild(row);
-    });
-
-    el.discountRows.replaceChildren(frag);
-  }
 
   // ----- render -----
   function render() {
@@ -214,13 +186,36 @@
     el.gpThumb.style.boxShadow = `0 0 0 4px ${col.glow}, 0 4px 10px rgba(20,32,28,.22)`;
 
     el.capCost.textContent = state.cost;
-    renderDiscountRows(base, cost);
+
+    // discount simulator
+    const discount = clamp(parseNumber(state.discount), 0, DISCOUNT_MAX);
+    const discountFill = DISCOUNT_MAX > 0 ? clamp((discount / DISCOUNT_MAX) * 100, 0, 100) : 0;
+    const discountPrice = base * (1 - discount / 100);
+    const discountProfit = discountPrice - cost;
+    const discountGp = gpFrom(discountPrice, cost);
+    const discountCol = gpColor(discountGp);
+    const discountLabel = shortPercent(discount);
+
+    el.discountHeaderValue.textContent = discountLabel;
+    el.discountTooltip.textContent = discountLabel;
+    el.discountTooltip.style.left = discountFill + "%";
+    el.discountTooltip.style.background = discountCol.hex;
+    el.discountFill.style.width = discountFill + "%";
+    el.discountThumb.style.left = discountFill + "%";
+    el.discountThumb.style.background = discountCol.hex;
+    el.discountThumb.style.boxShadow = `0 0 0 4px ${discountCol.glow}, 0 4px 10px rgba(20,32,28,.18)`;
+    el.discountPrice.textContent = money(discountPrice);
+    el.discountProfit.textContent = money(discountProfit);
+    el.discountProfit.parentElement.style.color = discountProfit >= 0 ? "#0E7C5A" : "#B4432D";
+    el.discountGp.textContent = percent(discountGp);
+    el.discountGp.style.color = Number.isFinite(discountGp) ? discountCol.dark : "#8A968F";
 
     // sync controls (without disturbing an active field)
     setVal(el.base, state.base);
     setVal(el.cost, state.cost);
     setVal(el.gpText, state.gp);
     setVal(el.gpSlider, String(gpNum));
+    setVal(el.discountSlider, String(discount));
   }
 
   // ----- handlers -----
@@ -236,11 +231,15 @@
   });
   el.gpText.addEventListener("input", (e) => { state.gp = e.target.value; render(); });
   el.gpSlider.addEventListener("input", (e) => { state.gp = e.target.value; render(); });
+  el.discountSlider.addEventListener("input", (e) => { state.discount = e.target.value; render(); });
 
   // static config-driven labels
   el.gpSlider.min = "0";
   el.gpSlider.max = String(GP_MAX);
   el.gpSlider.step = String(GP_STEP);
+  el.discountSlider.min = "0";
+  el.discountSlider.max = String(DISCOUNT_MAX);
+  el.discountSlider.step = String(DISCOUNT_STEP);
   el.capStep.textContent = String(GP_STEP);
 
   render();
